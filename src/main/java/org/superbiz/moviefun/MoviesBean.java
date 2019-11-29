@@ -16,96 +16,116 @@
  */
 package org.superbiz.moviefun;
 
-import javax.ejb.Stateless;
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
-import java.util.List;
 
-@Stateless
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+@Repository
 public class MoviesBean {
 
-    @PersistenceContext(unitName = "movie-unit")
-    private EntityManager entityManager;
+	@PersistenceContext
+	private EntityManager entityManager;
 
-    public Movie find(Long id) {
-        return entityManager.find(Movie.class, id);
-    }
+	public Movie find(Long id) {
+		return entityManager.find(Movie.class, id);
+	}
 
-    public void addMovie(Movie movie) {
-        entityManager.persist(movie);
-    }
+	@Transactional
+	public void addMovie(Movie movie) {
+		entityManager.persist(movie);
+	}
 
-    public void editMovie(Movie movie) {
-        entityManager.merge(movie);
-    }
+	@Transactional
+	public void addMovies(List<Movie> movies) {
+		movies.forEach(m -> {
+			entityManager.persist(m);
+		});
 
-    public void deleteMovie(Movie movie) {
-        entityManager.remove(movie);
-    }
+	}
 
-    public void deleteMovieId(long id) {
-        Movie movie = entityManager.find(Movie.class, id);
-        deleteMovie(movie);
-    }
+	@Transactional
+	public void editMovie(Movie movie) {
+		entityManager.merge(movie);
+	}
 
-    public List<Movie> getMovies() {
-        CriteriaQuery<Movie> cq = entityManager.getCriteriaBuilder().createQuery(Movie.class);
-        cq.select(cq.from(Movie.class));
-        return entityManager.createQuery(cq).getResultList();
-    }
+	@Transactional
+	public void deleteMovie(Movie movie) {
+		entityManager.remove(movie);
+	}
 
-    public List<Movie> findAll(int firstResult, int maxResults) {
-        CriteriaQuery<Movie> cq = entityManager.getCriteriaBuilder().createQuery(Movie.class);
-        cq.select(cq.from(Movie.class));
-        TypedQuery<Movie> q = entityManager.createQuery(cq);
-        q.setMaxResults(maxResults);
-        q.setFirstResult(firstResult);
-        return q.getResultList();
-    }
+	@Transactional
+	public void deleteMovieId(long id) {
+		Movie movie = entityManager.find(Movie.class, id);
+		deleteMovie(movie);
+	}
 
-    public int countAll() {
-        CriteriaQuery<Long> cq = entityManager.getCriteriaBuilder().createQuery(Long.class);
-        Root<Movie> rt = cq.from(Movie.class);
-        cq.select(entityManager.getCriteriaBuilder().count(rt));
-        TypedQuery<Long> q = entityManager.createQuery(cq);
-        return (q.getSingleResult()).intValue();
-    }
+	public List<Movie> getMovies() {
+		CriteriaQuery<Movie> cq = entityManager.getCriteriaBuilder().createQuery(Movie.class);
+		cq.select(cq.from(Movie.class));
+		return entityManager.createQuery(cq).getResultList();
+	}
 
-    public int count(String field, String searchTerm) {
-        CriteriaBuilder qb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Long> cq = qb.createQuery(Long.class);
-        Root<Movie> root = cq.from(Movie.class);
-        EntityType<Movie> type = entityManager.getMetamodel().entity(Movie.class);
+	public List<Movie> findAll(int firstResult, int maxResults) {
+		CriteriaQuery<Movie> cq = entityManager.getCriteriaBuilder().createQuery(Movie.class);
+		cq.select(cq.from(Movie.class));
+		TypedQuery<Movie> q = entityManager.createQuery(cq);
+		q.setMaxResults(maxResults);
+		q.setFirstResult(firstResult);
+		return q.getResultList();
+	}
 
-        Path<String> path = root.get(type.getDeclaredSingularAttribute(field, String.class));
-        Predicate condition = qb.like(path, "%" + searchTerm + "%");
+	public int countAll() {
+		CriteriaQuery<Long> cq = entityManager.getCriteriaBuilder().createQuery(Long.class);
+		Root<Movie> rt = cq.from(Movie.class);
+		cq.select(entityManager.getCriteriaBuilder().count(rt));
+		TypedQuery<Long> q = entityManager.createQuery(cq);
+		return (q.getSingleResult()).intValue();
+	}
 
-        cq.select(qb.count(root));
-        cq.where(condition);
+	public int count(String field, String searchTerm) {
+		CriteriaBuilder qb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = qb.createQuery(Long.class);
+		Root<Movie> root = cq.from(Movie.class);
+		EntityType<Movie> type = entityManager.getMetamodel().entity(Movie.class);
 
-        return entityManager.createQuery(cq).getSingleResult().intValue();
-    }
+		Path<String> path = root.get(type.getDeclaredSingularAttribute(field, String.class));
+		Predicate condition = qb.like(path, "%" + searchTerm + "%");
 
-    public List<Movie> findRange(String field, String searchTerm, int firstResult, int maxResults) {
-        CriteriaBuilder qb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Movie> cq = qb.createQuery(Movie.class);
-        Root<Movie> root = cq.from(Movie.class);
-        EntityType<Movie> type = entityManager.getMetamodel().entity(Movie.class);
+		cq.select(qb.count(root));
+		cq.where(condition);
 
-        Path<String> path = root.get(type.getDeclaredSingularAttribute(field, String.class));
-        Predicate condition = qb.like(path, "%" + searchTerm + "%");
+		return entityManager.createQuery(cq).getSingleResult().intValue();
+	}
 
-        cq.where(condition);
-        TypedQuery<Movie> q = entityManager.createQuery(cq);
-        q.setMaxResults(maxResults);
-        q.setFirstResult(firstResult);
-        return q.getResultList();
-    }
+	public List<Movie> findRange(String field, String searchTerm, int firstResult, int maxResults) {
+		CriteriaBuilder qb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Movie> cq = qb.createQuery(Movie.class);
+		Root<Movie> root = cq.from(Movie.class);
+		EntityType<Movie> type = entityManager.getMetamodel().entity(Movie.class);
 
-    public void clean() {
-        entityManager.createQuery("delete from Movie").executeUpdate();
-    }
+		Path<String> path = root.get(type.getDeclaredSingularAttribute(field, String.class));
+		Predicate condition = qb.like(path, "%" + searchTerm + "%");
+
+		cq.where(condition);
+		TypedQuery<Movie> q = entityManager.createQuery(cq);
+		q.setMaxResults(maxResults);
+		q.setFirstResult(firstResult);
+		return q.getResultList();
+	}
+
+	@Transactional
+	public void clean() {
+		entityManager.createQuery("delete from Movie").executeUpdate();
+	}
 }
