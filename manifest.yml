@@ -1,0 +1,17 @@
+---
+applications:
+- name: moviefun
+  memory: 736M
+  disk_quota: 256M
+  routes:
+  - route: moviefun-wacky-badger.apps.eu01.cf.canopy-cloud.com/
+  path: target/moviefun.war
+  buildpacks: 
+  - java_buildpack
+  stack: cflinuxfs3
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 1.8.+ } }'
+    
+  services:
+    - eureka-service
+    - movies-mysql
