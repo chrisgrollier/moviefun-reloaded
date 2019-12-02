@@ -1,10 +1,10 @@
 ---
 applications:
-- name: moviefun
+- name: moviefun-reloaded
   memory: 736M
   disk_quota: 256M
   routes:
-  - route: moviefun-wacky-badger.apps.eu01.cf.canopy-cloud.com/
+  - route: moviefun-reloaded.apps.eu01.cf.canopy-cloud.com/
   path: target/moviefun.war
   buildpacks: 
   - java_buildpack

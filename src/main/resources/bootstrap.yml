@@ -1,6 +1,6 @@
 spring:
   application:
-    name: moviefun
+    name: moviefun-reloaded
   cloud:
     config:      discovery:        enabled: true
         service-id: msi-config
